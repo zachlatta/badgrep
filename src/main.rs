@@ -11,8 +11,15 @@ fn main() {
     }
 
     let search = &args[1];
+    let mut directory = "./";
 
-    search_dir_recursive("./", search)
+    if args.len() >= 3 {
+        directory = &args[2];
+    }
+
+    println!("Searching {} for '{}'!", directory, search);
+
+    search_dir_recursive(directory, search)
 }
 
 fn search_dir_recursive(dir_to_search: &str, search: &str) {
