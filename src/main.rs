@@ -1,6 +1,6 @@
 use std::env;
-use std::process;
 use std::fs;
+use std::process;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -19,10 +19,20 @@ fn main() {
 
     println!("Searching {} for '{}'!", directory, search);
 
-    search_dir_recursive(directory, search)
+    let matches = search_dir_recursive(directory, search);
+
+    if matches.len() == 0 {
+        println!("No matches found :-(");
+    } else {
+        for file in matches {
+            println!("{} is a match", file);
+        }
+    }
 }
 
-fn search_dir_recursive(dir_to_search: &str, search: &str) {
+fn search_dir_recursive(dir_to_search: &str, search: &str) -> Vec<String> {
+    let mut matches = vec![];
+
     let paths = fs::read_dir(dir_to_search).unwrap();
 
     for path in paths {
@@ -35,16 +45,21 @@ fn search_dir_recursive(dir_to_search: &str, search: &str) {
 
             let contents = match contents {
                 Ok(contents) => contents,
-                Err(_error) => continue
+                Err(_error) => continue,
             };
 
             if contents.contains(search) {
-                println!("{} contains {}", unwrapped_path.to_str().unwrap(), search);
+                matches.push(unwrapped_path.to_str().unwrap().to_owned());
             }
-        }
+        };
 
         if md.is_dir() {
-            search_dir_recursive(unwrapped_path.to_str().unwrap(), search)
+            matches.append(&mut search_dir_recursive(
+                unwrapped_path.to_str().unwrap(),
+                search,
+            ));
         }
     }
+
+    return matches;
 }
